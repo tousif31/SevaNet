@@ -1,4 +1,5 @@
 import type { Express, Request, Response, NextFunction } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -7,6 +8,7 @@ import multer from "multer";
 import { randomBytes } from "crypto";
 import path from "path";
 import fs from "fs";
+import { checkAndAwardBadges, updateUserActivity } from "./badges";
 
 // Setup file upload
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -42,14 +44,14 @@ const upload = multer({
 
 // Authentication middleware
 function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated() && req.user) {
     return next();
   }
   res.status(401).json({ error: "Authentication required" });
 }
 
 function isAdmin(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated() && req.user.role === "admin") {
+  if (req.isAuthenticated() && req.user && req.user.role === "admin") {
     return next();
   }
   res.status(403).json({ error: "Administrator rights required" });
@@ -61,6 +63,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve uploaded files
   app.use("/uploads", express.static(uploadDir));
+  
+  // Get reports for current user
+  app.get("/api/reports/user", isAuthenticated, async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const reports = await storage.getReportsByUser(req.user.id);
+      res.json(reports);
+    } catch (error) {
+      next(error);
+    }
+  });
   
   // Report routes
   
@@ -246,4 +262,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-import express from "express";
+

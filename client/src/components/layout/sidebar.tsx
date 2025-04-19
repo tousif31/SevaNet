@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { MapPin, Home, CircleAlert, PlusCircle, Map, ListChecks, Shield, Settings, LogOut } from "lucide-react";
+import { MapPin, Home, CircleAlert, PlusCircle, Map, ListChecks, Shield, Settings, LogOut, User, Award } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface SidebarProps {
@@ -72,6 +72,17 @@ export function Sidebar({ className }: SidebarProps) {
               )}>
                 <Map className={cn("mr-3", isActive("/map") ? "text-blue-500" : "text-gray-500")} size={18} />
                 <span>Map View</span>
+              </a>
+            </Link>
+          </li>
+          <li>
+            <Link href="/profile">
+              <a className={cn(
+                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+                isActive("/profile") ? "bg-blue-50" : "hover:bg-gray-100"
+              )}>
+                <Award className={cn("mr-3", isActive("/profile") ? "text-blue-500" : "text-gray-500")} size={18} />
+                <span>My Achievements</span>
               </a>
             </Link>
           </li>

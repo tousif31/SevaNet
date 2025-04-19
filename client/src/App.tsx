@@ -10,6 +10,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import ReportIssue from "@/pages/report-issue";
 import ReportDetail from "@/pages/report-detail";
 import UserReports from "@/pages/user-reports";
+import ProfilePage from "@/pages/profile-page";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/report-issue" component={ReportIssue} />
       <ProtectedRoute path="/reports/:id" component={ReportDetail} />
       <ProtectedRoute path="/my-reports" component={UserReports} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>
   );

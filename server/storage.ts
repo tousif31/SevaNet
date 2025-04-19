@@ -31,11 +31,11 @@ export interface IStorage {
   addPhotoToReport(reportId: number, photoUrl: string): Promise<void>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Express session store
 }
 
 export class DatabaseStorage implements IStorage {
-  public sessionStore: session.SessionStore;
+  public sessionStore: any;
   
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -117,6 +117,10 @@ export class DatabaseStorage implements IStorage {
       content: "Report submitted"
     });
     
+    // Update user activity and check for badges
+    const { updateUserActivity } = await import('./badges');
+    await updateUserActivity(reportData.userId, 'report');
+    
     return newReport;
   }
 
@@ -134,11 +138,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateReportStatus(id: number, status: string): Promise<Report | undefined> {
+    const report = await this.getReport(id);
+    if (!report) return undefined;
+    
     const result = await db
       .update(reports)
       .set({ status })
       .where(eq(reports.id, id))
       .returning();
+    
+    // If status changed to completed, update user activity and badges
+    if (status === "completed" && report.status !== "completed") {
+      const { updateUserActivity } = await import('./badges');
+      await updateUserActivity(report.userId, 'completed');
+    }
     
     return result[0];
   }
@@ -155,6 +168,11 @@ export class DatabaseStorage implements IStorage {
 
   async createUpdate(updateData: InsertUpdate): Promise<Update> {
     const result = await db.insert(updates).values(updateData).returning();
+    
+    // Update user activity and check for badges
+    const { updateUserActivity } = await import('./badges');
+    await updateUserActivity(updateData.userId, 'update');
+    
     return result[0];
   }
 
