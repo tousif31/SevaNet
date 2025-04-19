@@ -11,6 +11,10 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   role: text("role").notNull().default("user"),
+  badges: jsonb("badges").default([]),
+  reportCount: integer("report_count").default(0),
+  updateCount: integer("update_count").default(0),
+  completedCount: integer("completed_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -128,3 +132,75 @@ export const statusDisplay = {
   "assigned": "Assigned",
   "completed": "Completed"
 };
+
+// Badge definitions
+export type Badge = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  level: number;
+  criteria: {
+    type: 'reports' | 'updates' | 'completed';
+    count: number;
+  };
+};
+
+export const badgeDefinitions: Badge[] = [
+  {
+    id: 'first-report',
+    name: 'First Report',
+    description: 'You submitted your first report',
+    icon: 'star',
+    level: 1,
+    criteria: { type: 'reports', count: 1 }
+  },
+  {
+    id: 'active-reporter',
+    name: 'Active Reporter',
+    description: 'You submitted 5 reports',
+    icon: 'award',
+    level: 2,
+    criteria: { type: 'reports', count: 5 }
+  },
+  {
+    id: 'super-reporter',
+    name: 'Super Reporter',
+    description: 'You submitted 10 reports',
+    icon: 'trophy',
+    level: 3,
+    criteria: { type: 'reports', count: 10 }
+  },
+  {
+    id: 'first-update',
+    name: 'First Update',
+    description: 'You added your first update',
+    icon: 'message-circle',
+    level: 1,
+    criteria: { type: 'updates', count: 1 }
+  },
+  {
+    id: 'active-commenter',
+    name: 'Active Commenter',
+    description: 'You added 5 updates',
+    icon: 'message-square',
+    level: 2,
+    criteria: { type: 'updates', count: 5 }
+  },
+  {
+    id: 'first-completed',
+    name: 'First Completion',
+    description: 'You had your first issue resolved',
+    icon: 'check-circle',
+    level: 1,
+    criteria: { type: 'completed', count: 1 }
+  },
+  {
+    id: 'problem-solver',
+    name: 'Problem Solver',
+    description: 'You had 5 issues resolved',
+    icon: 'check-square',
+    level: 2,
+    criteria: { type: 'completed', count: 5 }
+  }
+];
