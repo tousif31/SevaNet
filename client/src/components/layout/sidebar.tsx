@@ -58,24 +58,18 @@ export function Sidebar({ className }: SidebarProps) {
               <span>New Report</span>
             </Link>
           </li>
-          <li>
-            <Link href="/map" className={cn(
-              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-              isActive("/map") ? "bg-blue-50" : "hover:bg-gray-100"
-            )}>
-              <Map className={cn("mr-3", isActive("/map") ? "text-blue-500" : "text-gray-500")} size={18} />
-              <span>Map View</span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/profile" className={cn(
-              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-              isActive("/profile") ? "bg-blue-50" : "hover:bg-gray-100"
-            )}>
-              <Award className={cn("mr-3", isActive("/profile") ? "text-blue-500" : "text-gray-500")} size={18} />
-              <span>My Achievements</span>
-            </Link>
-          </li>
+
+          {user?.role !== "admin" && (
+            <li>
+              <Link href="/profile" className={cn(
+                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+                isActive("/profile") ? "bg-blue-50" : "hover:bg-gray-100"
+              )}>
+                <Award className={cn("mr-3", isActive("/profile") ? "text-blue-500" : "text-gray-500")} size={18} />
+                <span>My Achievements</span>
+              </Link>
+            </li>
+          )}
         </ul>
         
         {user?.role === "admin" && (

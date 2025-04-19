@@ -33,6 +33,7 @@ export function ReportForm() {
     latitude: "40.7128",
     longitude: "-74.0060"
   });
+  const [isLoadingGPS, setIsLoadingGPS] = useState(false);
   
   // Create form
   const form = useForm<FormValues>({
@@ -54,6 +55,65 @@ export function ReportForm() {
     setLocation({ latitude: lat, longitude: lng });
     form.setValue("latitude", lat);
     form.setValue("longitude", lng);
+  };
+  
+  // Get user's current location using GPS
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoadingGPS(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ 
+          latitude: latitude.toString(), 
+          longitude: longitude.toString() 
+        });
+        form.setValue("latitude", latitude.toString());
+        form.setValue("longitude", longitude.toString());
+        setIsLoadingGPS(false);
+        
+        toast({
+          title: "Location updated",
+          description: "Your current location has been set.",
+        });
+      },
+      (error) => {
+        setIsLoadingGPS(false);
+        let errorMessage = "Unable to retrieve your location";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access was denied. Please enable location permissions.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "The request to get your location timed out.";
+            break;
+        }
+        
+        toast({
+          title: "Location error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      },
+      { 
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0 
+      }
+    );
   };
   
   // Handle photo selection
@@ -181,7 +241,29 @@ export function ReportForm() {
         />
         
         <div>
-          <FormLabel className="block mb-2">Location</FormLabel>
+          <div className="flex justify-between items-center mb-2">
+            <FormLabel>Location</FormLabel>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={getCurrentLocation}
+              disabled={isLoadingGPS}
+              className="flex items-center"
+            >
+              {isLoadingGPS ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Getting Location...</>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  Use My Current Location
+                </>
+              )}
+            </Button>
+          </div>
           <Map 
             latitude={location.latitude}
             longitude={location.longitude}
@@ -189,6 +271,14 @@ export function ReportForm() {
             onLocationSelect={handleLocationSelect}
             height="300px"
           />
+          <div className="mt-2 text-sm text-gray-500">
+            <p>You can set the location by:</p>
+            <ul className="list-disc pl-5">
+              <li>Using the "Use My Current Location" button for GPS tracking</li>
+              <li>Clicking directly on the map</li>
+              <li>Dragging the marker to the desired location</li>
+            </ul>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -199,7 +289,7 @@ export function ReportForm() {
               <FormItem>
                 <FormLabel>Address</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. 123 Main Street" {...field} />
+                  <Input placeholder="e.g. 123 Main Street" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,7 +303,7 @@ export function ReportForm() {
               <FormItem>
                 <FormLabel>Neighborhood</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. Downtown" {...field} />
+                  <Input placeholder="e.g. Downtown" {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
