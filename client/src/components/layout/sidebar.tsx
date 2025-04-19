@@ -50,36 +50,30 @@ export function Sidebar({ className }: SidebarProps) {
             </Link>
           </li>
           <li>
-            <Link href="/report-issue">
-              <a className={cn(
-                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                isActive("/report-issue") ? "bg-blue-50" : "hover:bg-gray-100"
-              )}>
-                <PlusCircle className={cn("mr-3", isActive("/report-issue") ? "text-blue-500" : "text-gray-500")} size={18} />
-                <span>New Report</span>
-              </a>
+            <Link href="/report-issue" className={cn(
+              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+              isActive("/report-issue") ? "bg-blue-50" : "hover:bg-gray-100"
+            )}>
+              <PlusCircle className={cn("mr-3", isActive("/report-issue") ? "text-blue-500" : "text-gray-500")} size={18} />
+              <span>New Report</span>
             </Link>
           </li>
           <li>
-            <Link href="/map">
-              <a className={cn(
-                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                isActive("/map") ? "bg-blue-50" : "hover:bg-gray-100"
-              )}>
-                <Map className={cn("mr-3", isActive("/map") ? "text-blue-500" : "text-gray-500")} size={18} />
-                <span>Map View</span>
-              </a>
+            <Link href="/map" className={cn(
+              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+              isActive("/map") ? "bg-blue-50" : "hover:bg-gray-100"
+            )}>
+              <Map className={cn("mr-3", isActive("/map") ? "text-blue-500" : "text-gray-500")} size={18} />
+              <span>Map View</span>
             </Link>
           </li>
           <li>
-            <Link href="/profile">
-              <a className={cn(
-                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                isActive("/profile") ? "bg-blue-50" : "hover:bg-gray-100"
-              )}>
-                <Award className={cn("mr-3", isActive("/profile") ? "text-blue-500" : "text-gray-500")} size={18} />
-                <span>My Achievements</span>
-              </a>
+            <Link href="/profile" className={cn(
+              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+              isActive("/profile") ? "bg-blue-50" : "hover:bg-gray-100"
+            )}>
+              <Award className={cn("mr-3", isActive("/profile") ? "text-blue-500" : "text-gray-500")} size={18} />
+              <span>My Achievements</span>
             </Link>
           </li>
         </ul>
@@ -89,25 +83,21 @@ export function Sidebar({ className }: SidebarProps) {
             <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-8 mb-3">Admin</h2>
             <ul>
               <li>
-                <Link href="/admin">
-                  <a className={cn(
-                    "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                    isActive("/admin") ? "bg-blue-50" : "hover:bg-gray-100"
-                  )}>
-                    <ListChecks className={cn("mr-3", isActive("/admin") ? "text-blue-500" : "text-gray-500")} size={18} />
-                    <span>All Reports</span>
-                  </a>
+                <Link href="/admin" className={cn(
+                  "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+                  isActive("/admin") ? "bg-blue-50" : "hover:bg-gray-100"
+                )}>
+                  <ListChecks className={cn("mr-3", isActive("/admin") ? "text-blue-500" : "text-gray-500")} size={18} />
+                  <span>All Reports</span>
                 </Link>
               </li>
               <li>
-                <Link href="/admin/settings">
-                  <a className={cn(
-                    "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                    isActive("/admin/settings") ? "bg-blue-50" : "hover:bg-gray-100"
-                  )}>
-                    <Settings className={cn("mr-3", isActive("/admin/settings") ? "text-blue-500" : "text-gray-500")} size={18} />
-                    <span>Settings</span>
-                  </a>
+                <Link href="/admin/settings" className={cn(
+                  "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+                  isActive("/admin/settings") ? "bg-blue-50" : "hover:bg-gray-100"
+                )}>
+                  <Settings className={cn("mr-3", isActive("/admin/settings") ? "text-blue-500" : "text-gray-500")} size={18} />
+                  <span>Settings</span>
                 </Link>
               </li>
             </ul>
