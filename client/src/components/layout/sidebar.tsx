@@ -32,25 +32,21 @@ export function Sidebar({ className }: SidebarProps) {
         <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Menu</h2>
         <ul>
           <li>
-            <Link href="/">
-              <a className={cn(
-                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                isActive("/") ? "bg-blue-50" : "hover:bg-gray-100"
-              )}>
-                <Home className={cn("mr-3", isActive("/") ? "text-blue-500" : "text-gray-500")} size={18} />
-                <span>Dashboard</span>
-              </a>
+            <Link href="/" className={cn(
+              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+              isActive("/") ? "bg-blue-50" : "hover:bg-gray-100"
+            )}>
+              <Home className={cn("mr-3", isActive("/") ? "text-blue-500" : "text-gray-500")} size={18} />
+              <span>Dashboard</span>
             </Link>
           </li>
           <li>
-            <Link href="/my-reports">
-              <a className={cn(
-                "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
-                isActive("/my-reports") ? "bg-blue-50" : "hover:bg-gray-100"
-              )}>
-                <CircleAlert className={cn("mr-3", isActive("/my-reports") ? "text-blue-500" : "text-gray-500")} size={18} />
-                <span>My Reports</span>
-              </a>
+            <Link href="/my-reports" className={cn(
+              "flex items-center px-3 py-2 text-gray-700 rounded-md mb-1",
+              isActive("/my-reports") ? "bg-blue-50" : "hover:bg-gray-100"
+            )}>
+              <CircleAlert className={cn("mr-3", isActive("/my-reports") ? "text-blue-500" : "text-gray-500")} size={18} />
+              <span>My Reports</span>
             </Link>
           </li>
           <li>
