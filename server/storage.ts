@@ -1,8 +1,12 @@
 import { reports, users, updates, type User, type InsertUser, type Report, type InsertReport, type Update, type InsertUpdate } from "@shared/schema";
-import createMemoryStore from "memorystore";
 import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { eq, and, desc } from "drizzle-orm";
+import { db, pool } from "./db";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   // User operations
@@ -30,160 +34,152 @@ export interface IStorage {
   sessionStore: session.SessionStore;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private reports: Map<number, Report>;
-  private updates: Map<number, Update>;
+export class DatabaseStorage implements IStorage {
   public sessionStore: session.SessionStore;
-  private userIdCounter: number;
-  private reportIdCounter: number;
-  private updateIdCounter: number;
-
+  
   constructor() {
-    this.users = new Map();
-    this.reports = new Map();
-    this.updates = new Map();
-    this.userIdCounter = 1;
-    this.reportIdCounter = 1;
-    this.updateIdCounter = 1;
-    
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000 // 24 hours in milliseconds
+    this.sessionStore = new PostgresSessionStore({
+      pool, 
+      createTableIfMissing: true
     });
     
-    // Add some sample users for easier testing
-    this.createUser({
-      username: "admin",
-      password: "$2b$10$NRTbUBpMIH8qfyOI.fXjk.3ZP4SbNWVR.YM3EH0z0zwmqIp95wLvy", // "admin123"
-      name: "Admin User",
-      email: "admin@report-it.com",
-      role: "admin"
-    });
+    // Initialize with default users if needed
+    this.initializeDefaultUsers();
+  }
+
+  private async initializeDefaultUsers() {
+    const scryptAsync = promisify(scrypt);
     
-    this.createUser({
-      username: "user",
-      password: "$2b$10$YoFdA3E5NS.Zr5UNsWwbC.4B5iAxrWWXnQvQkLkvP50UbDLSy4Jxy", // "user123"
-      name: "Regular User",
-      email: "user@report-it.com",
-      role: "user"
-    });
+    async function hashPassword(password: string) {
+      const salt = randomBytes(16).toString("hex");
+      const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+      return `${buf.toString("hex")}.${salt}`;
+    }
+    
+    // Check if admin user exists
+    const adminExists = await this.getUserByUsername("admin");
+    if (!adminExists) {
+      await this.createUser({
+        username: "admin",
+        password: await hashPassword("admin123"),
+        name: "Admin User",
+        email: "admin@report-it.com",
+        role: "admin"
+      });
+    }
+    
+    // Check if regular user exists
+    const userExists = await this.getUserByUsername("user");
+    if (!userExists) {
+      await this.createUser({
+        username: "user",
+        password: await hashPassword("user123"),
+        name: "Regular User",
+        email: "user@report-it.com",
+        role: "user"
+      });
+    }
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of this.users.values()) {
-      if (user.username === username) {
-        return user;
-      }
-    }
-    return undefined;
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const id = this.userIdCounter++;
-    const now = new Date();
-    const user: User = { ...userData, id, createdAt: now };
-    this.users.set(id, user);
-    return user;
+    const result = await db.insert(users).values(userData).returning();
+    return result[0];
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return db.select().from(users);
   }
 
   async createReport(reportData: InsertReport): Promise<Report> {
-    const id = this.reportIdCounter++;
-    const now = new Date();
-    const report: Report = { 
-      ...reportData, 
-      id, 
-      status: "pending", 
-      photos: [],
-      assignedTo: undefined,
-      createdAt: now 
-    };
-    this.reports.set(id, report);
+    // Insert the report
+    const result = await db.insert(reports).values({
+      ...reportData,
+      status: "pending",
+      photos: []
+    }).returning();
+    
+    const newReport = result[0];
     
     // Create initial update for report creation
     await this.createUpdate({
-      reportId: id,
+      reportId: newReport.id,
       userId: reportData.userId,
       content: "Report submitted"
     });
     
-    return report;
+    return newReport;
   }
 
   async getReport(id: number): Promise<Report | undefined> {
-    return this.reports.get(id);
+    const result = await db.select().from(reports).where(eq(reports.id, id));
+    return result[0];
   }
 
   async getReportsByUser(userId: number): Promise<Report[]> {
-    const userReports: Report[] = [];
-    for (const report of this.reports.values()) {
-      if (report.userId === userId) {
-        userReports.push(report);
-      }
-    }
-    return userReports;
+    return db.select().from(reports).where(eq(reports.userId, userId));
   }
 
   async getAllReports(): Promise<Report[]> {
-    return Array.from(this.reports.values());
+    return db.select().from(reports);
   }
 
   async updateReportStatus(id: number, status: string): Promise<Report | undefined> {
-    const report = this.reports.get(id);
-    if (!report) return undefined;
+    const result = await db
+      .update(reports)
+      .set({ status })
+      .where(eq(reports.id, id))
+      .returning();
     
-    report.status = status;
-    this.reports.set(id, report);
-    return report;
+    return result[0];
   }
 
   async updateReportAssignment(id: number, assignedTo: string): Promise<Report | undefined> {
-    const report = this.reports.get(id);
-    if (!report) return undefined;
+    const result = await db
+      .update(reports)
+      .set({ assignedTo })
+      .where(eq(reports.id, id))
+      .returning();
     
-    report.assignedTo = assignedTo;
-    this.reports.set(id, report);
-    return report;
+    return result[0];
   }
 
   async createUpdate(updateData: InsertUpdate): Promise<Update> {
-    const id = this.updateIdCounter++;
-    const now = new Date();
-    const update: Update = { ...updateData, id, createdAt: now };
-    this.updates.set(id, update);
-    return update;
+    const result = await db.insert(updates).values(updateData).returning();
+    return result[0];
   }
 
   async getUpdatesByReportId(reportId: number): Promise<Update[]> {
-    const reportUpdates: Update[] = [];
-    for (const update of this.updates.values()) {
-      if (update.reportId === reportId) {
-        reportUpdates.push(update);
-      }
-    }
-    
-    // Sort updates by creation date, most recent first
-    return reportUpdates.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return db
+      .select()
+      .from(updates)
+      .where(eq(updates.reportId, reportId))
+      .orderBy(desc(updates.createdAt));
   }
 
   async addPhotoToReport(reportId: number, photoUrl: string): Promise<void> {
-    const report = this.reports.get(reportId);
+    // First, get the existing report
+    const report = await this.getReport(reportId);
     if (!report) return;
     
-    const photos = Array.isArray(report.photos) ? report.photos : [];
-    photos.push(photoUrl);
-    report.photos = photos;
-    this.reports.set(reportId, report);
+    // Extract existing photos and add the new one
+    const photos = Array.isArray(report.photos) ? [...report.photos, photoUrl] : [photoUrl];
+    
+    // Update the report with the new photos array
+    await db
+      .update(reports)
+      .set({ photos })
+      .where(eq(reports.id, reportId));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

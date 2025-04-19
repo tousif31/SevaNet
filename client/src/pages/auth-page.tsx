@@ -70,6 +70,7 @@ export default function AuthPage() {
       password: values.password,
       name: values.name,
       email: values.email,
+      confirmPassword: values.confirmPassword,
       role: "user",
     });
   };

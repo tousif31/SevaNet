@@ -1,7 +1,9 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Define tables first
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -12,6 +14,56 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const reports = pgTable("reports", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(),
+  address: text("address").notNull(),
+  neighborhood: text("neighborhood"),
+  latitude: text("latitude").notNull(),
+  longitude: text("longitude").notNull(),
+  status: text("status").notNull().default("pending"),
+  userId: integer("user_id").notNull(),
+  assignedTo: text("assigned_to"),
+  photos: jsonb("photos").default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const updates = pgTable("updates", {
+  id: serial("id").primaryKey(),
+  reportId: integer("report_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Then define relations
+export const usersRelations = relations(users, ({ many }) => ({
+  reports: many(reports),
+  updates: many(updates),
+}));
+
+export const reportsRelations = relations(reports, ({ one, many }) => ({
+  user: one(users, {
+    fields: [reports.userId],
+    references: [users.id],
+  }),
+  updates: many(updates),
+}));
+
+export const updatesRelations = relations(updates, ({ one }) => ({
+  report: one(reports, {
+    fields: [updates.reportId],
+    references: [reports.id],
+  }),
+  user: one(users, {
+    fields: [updates.userId],
+    references: [users.id],
+  }),
+}));
+
+// Then define schemas and types
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -23,6 +75,30 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export const insertReportSchema = createInsertSchema(reports).pick({
+  title: true,
+  description: true,
+  category: true,
+  address: true,
+  neighborhood: true,
+  latitude: true,
+  longitude: true,
+  userId: true,
+});
+
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Report = typeof reports.$inferSelect;
+
+export const insertUpdateSchema = createInsertSchema(updates).pick({
+  reportId: true,
+  userId: true,
+  content: true,
+});
+
+export type InsertUpdate = z.infer<typeof insertUpdateSchema>;
+export type Update = typeof updates.$inferSelect;
+
+// Constants
 export const categories = [
   "road-damage",
   "garbage", 
@@ -52,50 +128,3 @@ export const statusDisplay = {
   "assigned": "Assigned",
   "completed": "Completed"
 };
-
-export const reports = pgTable("reports", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  category: text("category").notNull(),
-  address: text("address").notNull(),
-  neighborhood: text("neighborhood"),
-  latitude: text("latitude").notNull(),
-  longitude: text("longitude").notNull(),
-  status: text("status").notNull().default("pending"),
-  userId: integer("user_id").notNull(),
-  assignedTo: text("assigned_to"),
-  photos: jsonb("photos").default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertReportSchema = createInsertSchema(reports).pick({
-  title: true,
-  description: true,
-  category: true,
-  address: true,
-  neighborhood: true,
-  latitude: true,
-  longitude: true,
-  userId: true,
-});
-
-export type InsertReport = z.infer<typeof insertReportSchema>;
-export type Report = typeof reports.$inferSelect;
-
-export const updates = pgTable("updates", {
-  id: serial("id").primaryKey(),
-  reportId: integer("report_id").notNull(),
-  userId: integer("user_id").notNull(),
-  content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertUpdateSchema = createInsertSchema(updates).pick({
-  reportId: true,
-  userId: true,
-  content: true,
-});
-
-export type InsertUpdate = z.infer<typeof insertUpdateSchema>;
-export type Update = typeof updates.$inferSelect;
