@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/utils";
@@ -40,7 +40,7 @@ export default function UserReports() {
   });
   
   // Filter reports
-  const filteredReports = reports.filter(report => {
+  const filteredReports = reports.filter((report: { title: string; description: string; status: string; category: string; }) => {
     // Filter by search query
     if (searchQuery && !report.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !report.description.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -65,7 +65,7 @@ export default function UserReports() {
   };
   
   // Get unique categories from reports
-  const categories = [...new Set(reports.map(report => report.category))];
+  const categories = Array.from(new Set(reports.map((report: { category: string }) => report.category))) as string[];
   
   return (
     <div className="flex h-screen bg-gray-50">
@@ -122,9 +122,9 @@ export default function UserReports() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map(category => (
+                      {categories.map((category: string) => (
                         <SelectItem key={category} value={category}>
-                          {categoriesDisplay[category as keyof typeof categoriesDisplay] || category}
+                          {(categoriesDisplay[category as keyof typeof categoriesDisplay] || category) as string}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -157,7 +157,7 @@ export default function UserReports() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredReports.map(report => (
+                      {filteredReports.map((report: { id: Key | null | undefined; title: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; address: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; neighborhood: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; category: string; createdAt: string | Date; status: string; }) => (
                         <TableRow key={report.id}>
                           <TableCell className="font-medium">{report.title}</TableCell>
                           <TableCell>

@@ -30,8 +30,8 @@ export function ReportForm() {
   const [, navigate] = useLocation();
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [location, setLocation] = useState({
-    latitude: "40.7128",
-    longitude: "-74.0060"
+    latitude: "15.14422",
+    longitude: "76.914963"
   });
   const [isLoadingGPS, setIsLoadingGPS] = useState(false);
   

@@ -29,7 +29,7 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           <span className="text-blue-500 text-xl mr-2">
             <MapPin size={24} />
           </span>
-          <h1 className="font-semibold">Report-It</h1>
+          <h1 className="font-semibold">Pura  Connect</h1>
         </div>
         
         {/* Search bar */}

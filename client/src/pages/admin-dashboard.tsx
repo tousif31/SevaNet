@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { getReportCountsByStatus } from "@/lib/utils";
@@ -67,14 +67,14 @@ export default function AdminDashboard() {
   };
   
   // Filter reports based on selected filters
-  const filteredReports = reports.filter(report => {
+  const filteredReports = reports.filter((report: { category: string; status: string; }) => {
     if (filters.category !== "all" && report.category !== filters.category) return false;
     if (filters.status !== "all" && report.status !== filters.status) return false;
     return true;
   });
   
   // Get unique neighborhoods for location filter
-  const neighborhoods = [...new Set(reports.map(r => r.neighborhood).filter(Boolean))];
+  const neighborhoods = Array.from(new Set(reports.map((r: { neighborhood: string; }) => r.neighborhood).filter(Boolean))) as string[];
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredReports.map(report => (
+                      {filteredReports.map((report: { id: Key | null | undefined; title: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; address: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; neighborhood: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; category: string; userId: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; createdAt: string | Date; status: string | undefined; }) => (
                         <TableRow key={report.id}>
                           <TableCell className="font-medium">{report.title}</TableCell>
                           <TableCell>
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
                           <TableCell>
                             <Select
                               defaultValue={report.status}
-                              onValueChange={(value) => handleStatusChange(report.id, value)}
+                              onValueChange={(value) => report.id && handleStatusChange(Number(report.id), value)}
                             >
                               <SelectTrigger className="w-[130px]">
                                 <SelectValue />
