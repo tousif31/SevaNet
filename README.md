@@ -58,7 +58,34 @@ This project uses a **React (frontend)**, **Express (backend)**, and **PostgreSQ
 ### 🚀 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/pura-connect.git
+git clone https://github.com/yourusername/pura-connect.git](https://github.com/tousif31/Pura-connect.git
 cd pura-connect
+
+cd server
+npm install
+
+
+PORT=5000
+DATABASE_URL=postgresql://your_user:your_password@localhost:5432/pura_connect
+
+
+npx prisma migrate dev
+
+
+npm run dev
+
+
+cd ../client
+npm install
+
+
+REACT_APP_API_URL=http://localhost:5000
+
+
+npm start
+
+
+-- Run this in your psql shell or GUI (e.g., pgAdmin)
+CREATE DATABASE pura_connect;
 
 
