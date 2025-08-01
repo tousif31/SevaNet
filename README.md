@@ -1,6 +1,6 @@
-# 🏙️ Pura Connect – Smart Civic Issue Reporting Platform
+# 🏙️ SevaNet – Smart Civic Issue Reporting Platform
 
-**Pura Connect** is a smart civic engagement platform that empowers citizens to report local issues—like potholes, broken street lights, and waste—directly to city authorities. It fosters faster resolution, transparency, and collaborative urban governance.
+**SevaNet** is a smart civic engagement platform that empowers citizens to report local issues—like potholes, broken street lights, and waste—directly to city authorities. It fosters faster resolution, transparency, and collaborative urban governance.
 
 ---
 
